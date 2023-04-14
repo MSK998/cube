@@ -56,6 +56,14 @@ func (qb *QueryBuilder) SelectStruct(obj interface{}) *QueryBuilder {
 	return qb
 }
 
+func (qb *QueryBuilder) GetStatement() string {
+    query := fmt.Sprintf("SELECT %s FROM %s", strings.Join(qb.selects, ","), qb.table)
+	if len(qb.wheres) > 0 {
+		query += " WHERE " + strings.Join(qb.wheres, " AND ")
+	}
+    return query
+}
+
 func (qb *QueryBuilder) Query(db *sql.DB) (*sql.Rows, error) {
 	query := fmt.Sprintf("SELECT %s FROM %s", strings.Join(qb.selects, ","), qb.table)
 	if len(qb.wheres) > 0 {
