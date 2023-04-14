@@ -57,18 +57,15 @@ func (qb *QueryBuilder) SelectStruct(obj interface{}) *QueryBuilder {
 }
 
 func (qb *QueryBuilder) GetStatement() string {
-    query := fmt.Sprintf("SELECT %s FROM %s", strings.Join(qb.selects, ","), qb.table)
+    query := fmt.Sprintf("SELECT %s FROM %s", strings.Join(qb.selects, "],["), parenthesesWrap(qb.table))
 	if len(qb.wheres) > 0 {
-		query += " WHERE " + strings.Join(qb.wheres, " AND ")
+		query += " WHERE " + strings.Join(qb.wheres, "] AND [")
 	}
     return query
 }
 
 func (qb *QueryBuilder) Query(db *sql.DB) (*sql.Rows, error) {
-	query := fmt.Sprintf("SELECT %s FROM %s", strings.Join(qb.selects, ","), qb.table)
-	if len(qb.wheres) > 0 {
-		query += " WHERE " + strings.Join(qb.wheres, " AND ")
-	}
+	query := qb.GetStatement()
 	return db.Query(query, qb.args...)
 }
 
@@ -137,4 +134,8 @@ func ScanStruct(rows *sql.Rows, out interface{}) error {
 	outValue.Elem().Set(reflectValue)
 
 	return nil
+}
+
+func parenthesesWrap(str string) string {
+    return fmt.Sprintf("[%s]", str)
 }
