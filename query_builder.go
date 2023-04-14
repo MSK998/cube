@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+type ColumnStructMapping map[string]string
+
 type QueryBuilder struct {
 	table   string
 	selects []string
@@ -20,12 +22,12 @@ func NewQueryBuilder() *QueryBuilder {
 }
 
 func (qb *QueryBuilder) Select(selects ...string) *QueryBuilder {
-    if len(selects) == 0 {
-        return qb
-    }
-    for _, v := range selects {
-        qb.selects = append(qb.selects, parenthesesWrap(v))
-    }
+	if len(selects) == 0 {
+		return qb
+	}
+	for _, v := range selects {
+		qb.selects = append(qb.selects, parenthesesWrap(v))
+	}
 	return qb
 }
 
@@ -62,11 +64,11 @@ func (qb *QueryBuilder) SelectStruct(obj interface{}) *QueryBuilder {
 }
 
 func (qb *QueryBuilder) GetStatement() string {
-    query := fmt.Sprintf("SELECT %s FROM %s", strings.Join(qb.selects, ","), parenthesesWrap(qb.table))
+	query := fmt.Sprintf("SELECT %s FROM %s", strings.Join(qb.selects, ","), parenthesesWrap(qb.table))
 	if len(qb.wheres) > 0 {
 		query += " WHERE " + strings.Join(qb.wheres, " AND ")
 	}
-    return query
+	return query
 }
 
 func (qb *QueryBuilder) Query(db *sql.DB) (*sql.Rows, error) {
@@ -75,9 +77,10 @@ func (qb *QueryBuilder) Query(db *sql.DB) (*sql.Rows, error) {
 }
 
 // Scan the sql.Rows into the passed struct
-// Some known limitations: 
+// Some known limitations:
 // Column names need to match the struct properties exactly or it will zero the value
 func ScanStruct(rows *sql.Rows, out interface{}) error {
+	colMap := make(ColumnStructMapping)
 	columns, err := rows.Columns()
 	if err != nil {
 		return err
@@ -99,6 +102,16 @@ func ScanStruct(rows *sql.Rows, out interface{}) error {
 		return errors.New("out must be a pointer to a slice")
 	}
 
+	fieldsPtr := reflect.New(reflectValue.Type().Elem())
+	for i := 0; i < fieldsPtr.Elem().NumField(); i++ {
+		fieldName := fieldsPtr.Elem().Type().Field(i).Name
+		for _, v := range columns {
+			if strings.EqualFold(v, fieldName) {
+				colMap[v] = fieldName
+			}
+		}
+	}
+
 	for rows.Next() {
 		if err := rows.Scan(values...); err != nil {
 			return err
@@ -108,9 +121,9 @@ func ScanStruct(rows *sql.Rows, out interface{}) error {
 		structVal := structPtr.Elem()
 
 		for i, column := range columns {
-			field := structVal.FieldByName(column)
+			field := structVal.FieldByName(colMap[column])
 			if !field.IsValid() {
-                continue
+				continue
 			}
 
 			value := reflect.ValueOf(values[i]).Elem().Interface()
@@ -142,5 +155,5 @@ func ScanStruct(rows *sql.Rows, out interface{}) error {
 }
 
 func parenthesesWrap(str string) string {
-    return fmt.Sprintf("[%s]", str)
+	return fmt.Sprintf("[%s]", str)
 }
