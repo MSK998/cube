@@ -20,7 +20,12 @@ func NewQueryBuilder() *QueryBuilder {
 }
 
 func (qb *QueryBuilder) Select(selects ...string) *QueryBuilder {
-	qb.selects = append(qb.selects, selects...)
+    if len(selects) == 0 {
+        return qb
+    }
+    for _, v := range selects {
+        qb.selects = append(qb.selects, parenthesesWrap(v))
+    }
 	return qb
 }
 
