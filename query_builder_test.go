@@ -1,4 +1,5 @@
 package cube
+
 import (
 	"database/sql"
 	"testing"
@@ -29,7 +30,7 @@ func TestQueryBuilder(t *testing.T) {
 
 	// Insert test data
 	_, err = db.Exec(`
-		INSERT INTO users (name, email, age)
+		INSERT INTO users ([name], [email], [age])
 		VALUES
 			('Alice', 'alice@example.com', 25),
 			('Bob', 'bob@example.com', 30),

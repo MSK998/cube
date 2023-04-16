@@ -15,6 +15,7 @@ type QueryBuilder struct {
 	selects []string
 	wheres  []string
 	args    []interface{}
+	inserts []string
 }
 
 func NewQueryBuilder() *QueryBuilder {
@@ -64,11 +65,36 @@ func (qb *QueryBuilder) SelectStruct(obj interface{}) *QueryBuilder {
 }
 
 func (qb *QueryBuilder) GetStatement() string {
-	query := fmt.Sprintf("SELECT %s FROM %s", strings.Join(qb.selects, ","), parenthesesWrap(qb.table))
-	if len(qb.wheres) > 0 {
-		query += " WHERE " + strings.Join(qb.wheres, " AND ")
+	var query string
+	if len(qb.selects) > 0 {
+		query = fmt.Sprintf("SELECT %s FROM %s", strings.Join(qb.selects, ","), parenthesesWrap(qb.table))
+		if len(qb.wheres) > 0 {
+			query += " WHERE " + strings.Join(qb.wheres, " AND ")
+		}
+		return query
 	}
+
+	if len(qb.inserts) > 0 {
+		values := make([]string, len(qb.inserts))
+		for i, _ := range values {
+			values[i] = "?"
+		}
+
+		var vBlock []string
+		numRows := len(qb.args) / len(qb.inserts)
+		for i := 0; i < numRows; i++ {
+			vBlock = append(vBlock, fmt.Sprintf("(%s)", strings.Join(values, ",")))
+		}
+
+		query = fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", parenthesesWrap(qb.table), strings.Join(qb.inserts, ","), strings.Join(vBlock, ","))
+
+	}
+
 	return query
+}
+
+func (qb *QueryBuilder) Exec(db *sql.DB) (sql.Result, error) {
+	return db.Exec(qb.GetStatement(), qb.args...)
 }
 
 func (qb *QueryBuilder) Query(db *sql.DB) (*sql.Rows, error) {
