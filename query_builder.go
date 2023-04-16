@@ -76,7 +76,7 @@ func (qb *QueryBuilder) GetStatement() string {
 
 	if len(qb.inserts) > 0 {
 		values := make([]string, len(qb.inserts))
-		for i, _ := range values {
+		for i := range values {
 			values[i] = "?"
 		}
 
