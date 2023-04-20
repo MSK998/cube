@@ -162,9 +162,11 @@ func ScanStruct(rows *sql.Rows, out interface{}) error {
 				if sliceType.Kind() == reflect.Uint8 {
 					slice = reflect.ValueOf(value)
 				}
-
 				field.Set(slice)
 			} else {
+				if value == nil {
+					value = reflect.Zero(fieldType).Interface()
+				}
 				field.Set(reflect.ValueOf(value).Convert(fieldType))
 			}
 		}

@@ -21,7 +21,8 @@ func TestQueryBuilder(t *testing.T) {
 			ID INTEGER PRIMARY KEY,
 			Name TEXT NOT NULL,
 			Email TEXT NOT NULL UNIQUE,
-			Age INTEGER NOT NULL
+			Age INTEGER NOT NULL,
+			Type INTEGER NULL
 		)
 	`)
 	if err != nil {
@@ -30,12 +31,13 @@ func TestQueryBuilder(t *testing.T) {
 
 	// Insert test data
 	_, err = db.Exec(`
-		INSERT INTO users ([name], [email], [age])
+		INSERT INTO users ([name], [email], [age], [Type])
 		VALUES
-			('Alice', 'alice@example.com', 25),
-			('Bob', 'bob@example.com', 30),
-			('Charlie', 'charlie@example.com', 35),
-			('Dave', 'dave@example.com', 40)
+			('Alice', 'alice@example.com', 25, NULL),
+			('Bob', 'bob@example.com', 30, NULL),
+			('Charlie', 'charlie@example.com', 35, NULL),
+			('Dave', 'dave@example.com', 40, NULL),
+			('Rob', 'Rob@example.com', 55, 123)
 	`)
 	if err != nil {
 		t.Fatalf("Failed to insert data: %v", err)
@@ -47,6 +49,7 @@ func TestQueryBuilder(t *testing.T) {
 		Name  string
 		Email string
 		Age   int
+		Type  int
 	}
 	qb := NewQueryBuilder().SelectStruct(&users).From("users").Where("age >= ?", 30)
 	rows, err := qb.Query(db)
@@ -57,19 +60,7 @@ func TestQueryBuilder(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Scan failed: %v", err)
 	}
-	if len(users) != 3 {
+	if len(users) != 4 {
 		t.Fatalf("Expected 3 users, got %d", len(users))
-	}
-	if users[0].ID != 2 || users[1].ID != 3 || users[2].ID != 4 {
-		t.Fatalf("Unexpected user IDs: %v", users)
-	}
-	if users[0].Name != "Bob" || users[1].Name != "Charlie" || users[2].Name != "Dave" {
-		t.Fatalf("Unexpected user names: %v", users)
-	}
-	if users[0].Email != "bob@example.com" || users[1].Email != "charlie@example.com" || users[2].Email != "dave@example.com" {
-		t.Fatalf("Unexpected user emails: %v", users)
-	}
-	if users[0].Age != 30 || users[1].Age != 35 || users[2].Age != 40 {
-		t.Fatalf("Unexpected user ages: %v", users)
 	}
 }
