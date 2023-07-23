@@ -1,6 +1,6 @@
 format_version: 9
 pipelines:
-  cube:
+  cube-test:
     group: MSK998
     materials: 
       cube:
