@@ -2,7 +2,7 @@
 format_version: 9
 pipelines:
   cube: # definition of mypipe1 pipeline
-    group: MSK998 # note that the group name can contain only of alphanumeric & underscore characters
+    group: Personal # note that the group name can contain only of alphanumeric & underscore characters
     materials:
       cube: # this is the name of material, the name can contain only of alphanumeric & underscore characters
         # keyword git says about type of material and url at once
