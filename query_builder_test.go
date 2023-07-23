@@ -51,9 +51,13 @@ func TestQueryBuilder(t *testing.T) {
 		Age   int
 		Type  int
 	}
-	qb := NewQueryBuilder().SelectStruct(&users).From("users").Where("age >= ?", 30)
+	qb := NewQueryBuilder().SelectStruct(&users).From("users").Where("age >= ?", 50)
+	t.Log(qb.GetStatement())
 	rows, err := qb.Query(db)
 	if err != nil {
+		if err == sql.ErrNoRows{
+			t.Log("No Rows")
+		}
 		t.Fatalf("Query failed: %v", err)
 	}
 	err = ScanStruct(rows, &users)
