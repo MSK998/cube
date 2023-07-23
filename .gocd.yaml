@@ -1,0 +1,21 @@
+pipelines:
+  cube:
+    group: MSK998
+    materials: 
+      cube:
+        git: https://github.com/MSK998/cube.git
+    stages:
+      - test:
+        clean_workspace: true
+        jobs:
+          golang:
+            resources:
+              - go
+            tasks:
+              - exec:
+                command: go
+                arguments:
+                  - test
+                  - ./...
+          
+        
