@@ -1,22 +1,22 @@
+#ci.gocd.yaml
 format_version: 9
 pipelines:
-  cube-test:
-    group: MSK998
-    materials: 
-      cube:
+  cube: # definition of mypipe1 pipeline
+    group: MSK998 # note that the group name can contain only of alphanumeric & underscore characters
+    materials:
+      cube: # this is the name of material, the name can contain only of alphanumeric & underscore characters
+        # keyword git says about type of material and url at once
         git: https://github.com/MSK998/cube.git
-    stages:
-      - test:
-        clean_workspace: true
-        jobs:
-          golang:
-            resources:
-              - go
-            tasks:
-              - exec:
-                command: go
-                arguments:
-                  - test
-                  - ./...
-          
-        
+    stages: # list of stages in order
+      - test: # name of stage
+          clean_workspace: true
+          jobs:
+            test: # name of the job
+              resources:
+               - go
+              tasks: # ordered list of tasks to execute in job csharp
+               - exec: # indicates type of task
+                   command: go
+                   arguments:
+                    - test
+                    - ./...
