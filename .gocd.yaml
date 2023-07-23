@@ -7,4 +7,4 @@ pipelines:
     materials:
       cube: # this is the name of material, the name can contain only of alphanumeric & underscore characters
         # keyword git says about type of material and url at once
-        scm: scm-fb-cube
+        scm: 4d376ac8-a7ac-4451-8a6b-32ff2996b775
