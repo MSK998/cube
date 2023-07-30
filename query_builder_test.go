@@ -64,7 +64,7 @@ func TestQueryBuilder(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Scan failed: %v", err)
 	}
-	if len(users) != 4 {
+	if len(users) != 3 {
 		t.Fatalf("Expected 3 users, got %d", len(users))
 	}
 }
