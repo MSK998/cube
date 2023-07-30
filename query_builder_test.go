@@ -51,7 +51,7 @@ func TestQueryBuilder(t *testing.T) {
 		Age   int
 		Type  int
 	}
-	qb := NewQueryBuilder().SelectStruct(&users).From("users").Where("age >= ?", 50)
+	qb := NewQueryBuilder().SelectStruct(&users).From("users").Where("age >= ?", 35)
 	t.Log(qb.GetStatement())
 	rows, err := qb.Query(db)
 	if err != nil {
