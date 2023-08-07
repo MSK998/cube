@@ -155,19 +155,24 @@ func ScanStruct(rows *sql.Rows, out interface{}) error {
 			value := reflect.ValueOf(values[i]).Elem().Interface()
 			fieldType := field.Type()
 
-			if fieldType.Kind() == reflect.Slice {
+			switch fieldType.Kind() {
+			case reflect.Slice:
 				sliceType := fieldType.Elem()
 				slice := reflect.MakeSlice(fieldType, 1, 1)
 
 				if sliceType.Kind() == reflect.Uint8 {
 					slice = reflect.ValueOf(value)
 				}
+
 				field.Set(slice)
-			} else {
-				if value == nil {
-					value = reflect.Zero(fieldType).Interface()
+			case reflect.String:
+				if value != nil {
+					field.Set(reflect.ValueOf(value).Convert(fieldType))
 				}
-				field.Set(reflect.ValueOf(value).Convert(fieldType))
+			default:
+				if value != nil {
+					field.Set(reflect.ValueOf(value).Convert(fieldType))
+				}
 			}
 		}
 		reflectValue = reflect.Append(reflectValue, structVal)
