@@ -16,6 +16,9 @@ type QueryBuilder struct {
 	wheres  []string
 	args    []interface{}
 	inserts []string
+	orderBy bool
+	orderByArgs []interface{}
+	orderByDesc bool
 }
 
 func NewQueryBuilder() *QueryBuilder {
@@ -41,6 +44,13 @@ func (qb *QueryBuilder) From(table string) *QueryBuilder {
 func (qb *QueryBuilder) Where(query string, args ...interface{}) *QueryBuilder {
 	qb.wheres = append(qb.wheres, query)
 	qb.args = append(qb.args, args...)
+	return qb
+}
+
+func (qb *QueryBuilder) OrderBy(desc bool, cols ...interface{}) *QueryBuilder {
+	qb.orderBy = true
+	qb.orderByArgs = append(qb.orderByArgs, cols...)
+	qb.orderByDesc = desc
 	return qb
 }
 
@@ -106,7 +116,7 @@ func (qb *QueryBuilder) Query(db *sql.DB) (*sql.Rows, error) {
 // Some known limitations:
 // Column names need to match the struct properties exactly or it will zero the value
 func ScanStruct(rows *sql.Rows, out interface{}) error {
-	colMap := make(ColumnStructMapping)
+	colMap := make(columnStructMapping)
 	columns, err := rows.Columns()
 	if err != nil {
 		return err
