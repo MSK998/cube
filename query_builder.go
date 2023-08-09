@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-type ColumnStructMapping map[string]string
+type columnStructMapping map[string]string
 
 type QueryBuilder struct {
 	table   string
