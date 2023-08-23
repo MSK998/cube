@@ -8,14 +8,16 @@ import (
 	"strings"
 )
 
-type ColumnStructMapping map[string]string
+type columnStructMapping map[string]string
 
 type QueryBuilder struct {
-	table   string
-	selects []string
-	wheres  []string
-	args    []interface{}
-	inserts []string
+	table            string
+	selects          []string
+	wheres           []string
+	args             []interface{}
+	inserts          []string
+	orderByArgs      []string
+	orderByDirection string
 }
 
 func NewQueryBuilder() *QueryBuilder {
@@ -41,6 +43,15 @@ func (qb *QueryBuilder) From(table string) *QueryBuilder {
 func (qb *QueryBuilder) Where(query string, args ...interface{}) *QueryBuilder {
 	qb.wheres = append(qb.wheres, query)
 	qb.args = append(qb.args, args...)
+	return qb
+}
+
+func (qb *QueryBuilder) OrderBy(desc bool, cols ...string) *QueryBuilder {
+	qb.orderByArgs = append(qb.orderByArgs, cols...)
+	qb.orderByDirection = " ASC "
+	if desc {
+		qb.orderByDirection = " DESC "
+	}
 	return qb
 }
 
@@ -71,6 +82,10 @@ func (qb *QueryBuilder) GetStatement() string {
 		if len(qb.wheres) > 0 {
 			query += " WHERE " + strings.Join(qb.wheres, " AND ")
 		}
+
+		if len(qb.orderByArgs) > 0 {
+			query += " ORDER BY " + strings.Join(qb.orderByArgs, ", ") + qb.orderByDirection
+		}
 		return query
 	}
 
@@ -87,9 +102,8 @@ func (qb *QueryBuilder) GetStatement() string {
 		}
 
 		query = fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", parenthesesWrap(qb.table), strings.Join(qb.inserts, ","), strings.Join(vBlock, ","))
-
 	}
-
+	
 	return query
 }
 
@@ -106,7 +120,7 @@ func (qb *QueryBuilder) Query(db *sql.DB) (*sql.Rows, error) {
 // Some known limitations:
 // Column names need to match the struct properties exactly or it will zero the value
 func ScanStruct(rows *sql.Rows, out interface{}) error {
-	colMap := make(ColumnStructMapping)
+	colMap := make(columnStructMapping)
 	columns, err := rows.Columns()
 	if err != nil {
 		return err
