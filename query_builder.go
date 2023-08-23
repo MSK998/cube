@@ -11,14 +11,13 @@ import (
 type columnStructMapping map[string]string
 
 type QueryBuilder struct {
-	table   string
-	selects []string
-	wheres  []string
-	args    []interface{}
-	inserts []string
-	orderBy bool
-	orderByArgs []interface{}
-	orderByDesc bool
+	table            string
+	selects          []string
+	wheres           []string
+	args             []interface{}
+	inserts          []string
+	orderByArgs      []string
+	orderByDirection string
 }
 
 func NewQueryBuilder() *QueryBuilder {
@@ -47,10 +46,12 @@ func (qb *QueryBuilder) Where(query string, args ...interface{}) *QueryBuilder {
 	return qb
 }
 
-func (qb *QueryBuilder) OrderBy(desc bool, cols ...interface{}) *QueryBuilder {
-	qb.orderBy = true
+func (qb *QueryBuilder) OrderBy(desc bool, cols ...string) *QueryBuilder {
 	qb.orderByArgs = append(qb.orderByArgs, cols...)
-	qb.orderByDesc = desc
+	qb.orderByDirection = " ASC "
+	if desc {
+		qb.orderByDirection = " DESC "
+	}
 	return qb
 }
 
@@ -81,6 +82,10 @@ func (qb *QueryBuilder) GetStatement() string {
 		if len(qb.wheres) > 0 {
 			query += " WHERE " + strings.Join(qb.wheres, " AND ")
 		}
+
+		if len(qb.orderByArgs) > 0 {
+			query += " ORDER BY " + strings.Join(qb.orderByArgs, ", ") + qb.orderByDirection
+		}
 		return query
 	}
 
@@ -97,9 +102,8 @@ func (qb *QueryBuilder) GetStatement() string {
 		}
 
 		query = fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", parenthesesWrap(qb.table), strings.Join(qb.inserts, ","), strings.Join(vBlock, ","))
-
 	}
-
+	
 	return query
 }
 

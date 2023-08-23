@@ -86,7 +86,7 @@ func TestOrderBy(t *testing.T) {
 			Age   int
 			Type  int
 		}
-		qb := NewQueryBuilder().SelectStruct(&users).From("users").Where("age >= ?", 35).OrderBy(false, "age")
+		qb := NewQueryBuilder().SelectStruct(&users).From("users").Where("age >= ?", 35).OrderBy(true, "age")
 		t.Log(qb.GetStatement())
 		rows, err := qb.Query(db)
 		if err != nil {
@@ -99,7 +99,12 @@ func TestOrderBy(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Scan failed: %v", err)
 		}
+
 		if len(users) != 3 {
 			t.Fatalf("Expected 3 users, got %d", len(users))
+		}
+
+		if users[0].Age != 55 {
+			t.Fatalf("Expected to get age 35 but got something different")
 		}
 }
